@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betsy Management Solutions - Live Project Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #764ba2;
+        }
+
+        .save-status {
+            color: #28a745;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .upload-box {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-box:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+
+        .upload-box.dragover {
+            border-color: #667eea;
+            background: #e8f2ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: transform 0.3s;
+            margin: 0.25rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .projects-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .project-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .project-item:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+
+        .project-info h4 {
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .project-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .project-actions {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .project-item:hover .project-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            margin-left: 0.25rem;
+            border-radius: 4px;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-good {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+        }
+
+        .task-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .task-item:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-actions {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .task-checkbox {
+            margin-right: 0.75rem;
+            margin-top: 0.25rem;
+            cursor: pointer;
+        }
+
+        .task-text {
+            flex-grow: 1;
+            transition: all 0.3s;
+        }
+
+        .task-completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .task-dates {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .date-overdue {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        .date-due-soon {
+            color: #ffc107;
+            font-weight: 500;
+        }
+
+        .date-good {
+            color: #28a745;
+        }
+
+        .priority-high {
+            border-left: 4px solid #dc3545;
+        }
+
+        .priority-medium {
+            border-left: 4px solid #ffc107;
+        }
+
+        .priority-low {
+            border-left: 4px solid #28a745;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 500px;
+            margin: 5% auto;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-select:focus, textarea:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .header-content {
+                text-align: center;
+            }
+
+            .logo {
+                font-size: 1.4rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">📊 Betsy Management Solutions</div>
+            <div class="save-status" id="saveStatus">✅ Ready</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero-section">
+            <h1 class="hero-title">Live Project Management Dashboard</h1>
+            <p class="hero-subtitle">Upload Excel/CSV files, manage projects & tasks - Everything saves automatically!</p>
+        </section>
+
+        <div class="success-message" id="successMessage"></div>
+        <div class="error-message" id="errorMessage"></div>
+
+        <section class="upload-section">
+            <h2 class="card-title">📁 Upload & Manage Your Data</h2>
+            <div class="upload-grid">
+                <div class="upload-box" id="projectUpload">
+                    <div class="upload-icon">📊</div>
+                    <div class="upload-text">Drop Project Excel/CSV here</div>
+                    <p style="font-size: 0.9rem; color: #888;">Or click to browse files</p>
+                    <input type="file" id="projectFile" class="file-input" accept=".xlsx,.xls,.csv">
+                </div>
+                <div class="upload-box" id="taskUpload">
+                    <div class="upload-icon">✅</div>
+                    <div class="upload-text">Drop Task Excel/CSV here</div>
+                    <p style="font-size: 0.9rem; color: #888;">Or click to browse files</p>
+                    <input type="file" id="taskFile" class="file-input" accept=".xlsx,.xls,.csv">
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn" onclick="addNewProject()">➕ Add New Project</button>
+                <button class="btn btn-secondary" onclick="addNewTask()">📝 Add New Task</button>
+                <button class="btn btn-secondary" onclick="exportData()">💾 Export Data</button>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-value" id="totalValue">$0</div>
+                <div class="stat-label">Total Project Value</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value" id="completedValue">$0</div>
+                <div class="stat-label">Completed Value</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-value" id="activeProjects">0</div>
+                <div class="stat-label">Active Projects</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="completedTasks">0</div>
+                <div class="stat-label">Completed Tasks</div>
+            </div>
+        </section>
+
+        <section class="dashboard-grid">
+            <div class="card">
+                <h3 class="card-title">🏗️ Active Projects</h3>
+                <div class="projects-list" id="projectsList"></div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">📝 Recent Tasks</h3>
+                <div class="task-list" id="tasksList"></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3 class="card-title">📊 Progress Overview</h3>
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </section>
+    </div>
+
+    <!-- Add/Edit Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('projectModal')">&times;</span>
+            <h3 id="projectModalTitle">Add New Project</h3>
+            <form id="projectForm">
+                <div class="form-group">
+                    <label class="form-label">Project Name *</label>
+                    <input type="text" id="projectName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Client *</label>
+                    <input type="text" id="projectClient" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Project Value ($) *</label>
+                    <input type="number" id="projectValue" class="form-input" required min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Progress (%)</label>
+                    <input type="number" id="projectProgress" class="form-input" min="0" max="100" value="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="projectStatus" class="form-select">
+                        <option value="good">🟢 Good</option>
+                        <option value="warning">🟡 Attention Needed</option>
+                        <option value="danger">🔴 Problem</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Team</label>
+                    <input type="text" id="projectTeam" class="form-input" placeholder="e.g., Mike's crew (3 people)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" id="projectDueDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="projectDescription" class="form-input" rows="3" placeholder="Project description..."></textarea>
+                </div>
+                <button type="submit" class="btn" id="projectSubmitBtn">Add Project</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('taskModal')">&times;</span>
+            <h3 id="taskModalTitle">Add New Task</h3>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label class="form-label">Task Description *</label>
+                    <input type="text" id="taskDescription" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <select id="taskPriority" class="form-select">
+                        <option value="high">🔴 High Priority</option>
+                        <option value="medium" selected>🟡 Medium Priority</option>
+                        <option value="low">🟢 Low Priority</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assigned To</label>
+                    <input type="text" id="taskAssignee" class="form-input" placeholder="Person responsible">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" id="taskStartDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" id="taskDueDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Project</label>
+                    <select id="taskProject" class="form-select">
+                        <option value="">Select Project (Optional)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn" id="taskSubmitBtn">Add Task</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let projects = [];
+        let tasks = [];
+        let progressChart = null;
+        let editingProjectId = null;
+        let editingTaskId = null;
+
+        // Initialize project ID counter
+        let projectIdCounter = 1;
+        let taskIdCounter = 1;
+
+        // Global functions that need to be accessible from HTML
+        function addNewProject() {
+            editingProjectId = null;
+            document.getElementById('projectModalTitle').textContent = 'Add New Project';
+            document.getElementById('projectSubmitBtn').textContent = 'Add Project';
+            document.getElementById('projectForm').reset();
+            document.getElementById('projectModal').style.display = 'block';
+        }
+
+        function addNewTask() {
+            editingTaskId = null;
+            document.getElementById('taskModalTitle').textContent = 'Add New Task';
+            document.getElementById('taskSubmitBtn').textContent = 'Add Task';
+            document.getElementById('taskForm').reset();
+            updateProjectDropdown();
+            document.getElementById('taskModal').style.display = 'block';
+        }
+
+        function editProject(id) {
+            const project = projects.find(p => p.id === id);
+            if (!project) return;
+
+            editingProjectId = id;
+            document.getElementById('projectModalTitle').textContent = 'Edit Project';
+            document.getElementById('projectSubmitBtn').textContent = 'Update Project';
+            
+            document.getElementById('projectName').value = project.name || '';
+            document.getElementById('projectClient').value = project.client || '';
+            document.getElementById('projectValue').value = project.value || '';
+            document.getElementById('projectProgress').value = project.progress || '';
+            document.getElementById('projectStatus').value = project.status || 'good';
+            document.getElementById('projectTeam').value = project.team || '';
+            document.getElementById('projectDueDate').value = project.dueDate || '';
+            document.getElementById('projectDescription').value = project.description || '';
+            
+            document.getElementById('projectModal').style.display = 'block';
+        }
+
+        function deleteProject(id) {
+            if (confirm('Are you sure you want to delete this project?')) {
+                projects = projects.filter(p => p.id !== id);
+                tasks = tasks.filter(t => t.projectId !== id);
+                saveDataToStorage();
+                updateDashboard();
+                showMessage('Project deleted successfully!', 'success');
+            }
+        }
+
+        function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            editingTaskId = id;
+            document.getElementById('taskModalTitle').textContent = 'Edit Task';
+            document.getElementById('taskSubmitBtn').textContent = 'Update Task';
+            
+            document.getElementById('taskDescription').value = task.description || '';
+            document.getElementById('taskPriority').value = task.priority || 'medium';
+            document.getElementById('taskAssignee').value = task.assignee || '';
+            document.getElementById('taskStartDate').value = task.startDate || '';
+            document.getElementById('taskDueDate').value = task.dueDate || '';
+            
+            updateProjectDropdown();
+            document.getElementById('taskProject').value = task.projectId || '';
+            
+            document.getElementById('taskModal').style.display = 'block';
+        }
+
+        function deleteTask(id) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveDataToStorage();
+                updateDashboard();
+                showMessage('Task deleted successfully!', 'success');
+            }
+        }
+
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveDataToStorage();
+                updateDashboard();
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function exportData() {
+            try {
+                const wb = XLSX.utils.book_new();
+
+                const projectsData = projects.map(p => ({
+                    'Project Name': p.name || '',
+                    'Client': p.client || '',
+                    'Value': p.value || 0,
+                    'Progress (%)': p.progress || 0,
+                    'Status': p.status || '',
+                    'Team': p.team || '',
+                    'Due Date': p.dueDate || '',
+                    'Description': p.description || ''
+                }));
+                
+                const projectsWS = XLSX.utils.json_to_sheet(projectsData);
+                XLSX.utils.book_append_sheet(wb, projectsWS, 'Projects');
+
+                const tasksData = tasks.map(t => {
+                    const project = projects.find(p => p.id === t.projectId);
+                    return {
+                        'Task Description': t.description || '',
+                        'Priority': t.priority || '',
+                        'Completed': t.completed ? 'Yes' : 'No',
+                        'Assignee': t.assignee || '',
+                        'Start Date': t.startDate || '',
+                        'Due Date': t.dueDate || '',
+                        'Created Date': t.createdDate || '',
+                        'Project': project ? project.name : ''
+                    };
+                });
+                
+                const tasksWS = XLSX.utils.json_to_sheet(tasksData);
+                XLSX.utils.book_append_sheet(wb, tasksWS, 'Tasks');
+
+                const date = new Date().toISOString().split('T')[0];
+                const filename = `betsy-management-export-${date}.xlsx`;
+
+                XLSX.writeFile(wb, filename);
+                showMessage('Data exported successfully!', 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showMessage('Error exporting data: ' + error.message, 'error');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL data? This cannot be undone!')) {
+                if (confirm('This will delete all projects and tasks. Are you absolutely sure?')) {
+                    projects = [];
+                    tasks = [];
+                    projectIdCounter = 1;
+                    taskIdCounter = 1;
+                    localStorage.removeItem('betsyProjects');
+                    localStorage.removeItem('betsyTasks');
+                    localStorage.removeItem('betsyCounters');
+                    updateDashboard();
+                    showMessage('All data cleared successfully!', 'success');
+                }
+            }
+        }
+
+        // Helper functions
+        function saveDataToStorage() {
+            try {
+                localStorage.setItem('betsyProjects', JSON.stringify(projects));
+                localStorage.setItem('betsyTasks', JSON.stringify(tasks));
+                localStorage.setItem('betsyCounters', JSON.stringify({
+                    projectIdCounter,
+                    taskIdCounter
+                }));
+                updateSaveStatus('✅ Auto-saved');
+                return true;
+            } catch (error) {
+                console.error('Save error:', error);
+                updateSaveStatus('❌ Save failed');
+                return false;
+            }
+        }
+
+        function loadDataFromStorage() {
+            try {
+                const savedProjects = localStorage.getItem('betsyProjects');
+                const savedTasks = localStorage.getItem('betsyTasks');
+                const savedCounters = localStorage.getItem('betsyCounters');
+                
+                if (savedProjects) {
+                    projects = JSON.parse(savedProjects);
+                } else {
+                    projects = [];
+                }
+                
+                if (savedTasks) {
+                    tasks = JSON.parse(savedTasks);
+                } else {
+                    tasks = [];
+                }
+
+                if (savedCounters) {
+                    const counters = JSON.parse(savedCounters);
+                    projectIdCounter = counters.projectIdCounter || 1;
+                    taskIdCounter = counters.taskIdCounter || 1;
+                } else {
+                    // Set counters based on existing data
+                    if (projects.length > 0) {
+                        projectIdCounter = Math.max(...projects.map(p => p.id || 0)) + 1;
+                    }
+                    if (tasks.length > 0) {
+                        taskIdCounter = Math.max(...tasks.map(t => t.id || 0)) + 1;
+                    }
+                }
+                
+                if (projects.length === 0 && tasks.length === 0) {
+                    loadSampleData();
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                projects = [];
+                tasks = [];
+                loadSampleData();
+            }
+        }
+
+        function updateSaveStatus(message) {
+            const status = document.getElementById('saveStatus');
+            if (status) {
+                status.textContent = message;
+                if (message.includes('failed')) {
+                    setTimeout(() => {
+                        if (status) status.textContent = '✅ Ready';
+                    }, 3000);
+                } else if (message.includes('saved')) {
+                    setTimeout(() => {
+                        if (status) status.textContent = '✅ Ready';
+                    }, 2000);
+                }
+            }
+        }
+
+        function loadSampleData() {
+            projects = [
+                {
+                    id: projectIdCounter++,
+                    name: "Downtown
