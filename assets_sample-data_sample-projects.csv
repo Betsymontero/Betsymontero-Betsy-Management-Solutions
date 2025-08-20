@@ -1,0 +1,6 @@
+Project Name,Type,Crew,Location,Status,Start Date,End Date,Priority,Planned Footage,Completed Footage,Customer,Permits
+"Maple Street MDU Installation","MDU","Team Alpha","123 Maple St","In Progress","2025-08-11","2025-08-15","High",500,325,"Metro Housing Corp","Dig Safe: #8829947; City Permit: MP-2025-089"
+"Downtown Fiber Bore","Underground Drilling","Team Beta","Main St & 5th Ave","Scheduled","2025-08-14","2025-08-18","Medium",1200,0,"City Municipal","Dig Safe: #8830124"
+"Residential Drop Installation","Service Drop","Team Gamma","456 Oak Drive","Completed","2025-08-08","2025-08-10","Low",150,150,"Residential","Dig Safe: #8829855"
+"Business District Expansion","Underground Drilling","Team Alpha","Business Park","Planning","2025-08-20","2025-08-25","High",800,0,"Corporate Client","Pending"
+"Emergency Repair - Pine St","Maintenance","Team Beta","789 Pine Street","In Progress","2025-08-12","2025-08-13","Critical",200,150,"City Emergency","Emergency Permit: EM-2025-001"
